@@ -1,0 +1,412 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-04-10"
+---
+```{r}
+library(tibble)
+library(tidyverse)
+
+emissions_data <- tibble(
+  Mode = c(
+    "Domestic flight",
+    "Long haul flight",
+    "Car (1 passenger)",
+    "Bus",
+    "Car (4 passengers)",
+    "Domestic rail",
+    "Coach",
+    "High-speed Rail"
+  ),
+  Emissions_gCO2_per_km = c(
+    133, 102, 171, 104, 43, 41, 27, 6
+  ),
+  Additional_Emissions_gCO2_per_km = c(
+    121, 93, NA, NA, NA, NA, NA, NA
+  )
+)
+
+
+# Arrange modes by emissions for nice ordering
+emissions_data <- emissions_data %>%
+  mutate(Mode = fct_reorder(Mode, Emissions_gCO2_per_km))
+
+# Plot
+ggplot(emissions_data, aes(x = Emissions_gCO2_per_km, y = Mode)) +
+  geom_col(fill = "#0072B2") +  # Main bars (dark blue)
+  geom_col(aes(x = Emissions_gCO2_per_km + Additional_Emissions_gCO2_per_km),
+           fill = "#B2D8F7") +  # Additional emissions (light blue)
+  geom_text(aes(label = paste0(Emissions_gCO2_per_km, "g")),
+            hjust = -0.1, color = "black", size = 4) +  # Labels on dark blue bars
+  geom_text(aes(x = Emissions_gCO2_per_km + Additional_Emissions_gCO2_per_km, 
+                label = ifelse(!is.na(Additional_Emissions_gCO2_per_km),
+                               paste0("+", Additional_Emissions_gCO2_per_km, "g"), "")),
+            hjust = -0.1, color = "black", size = 4) +  # Labels on light blue parts
+  labs(
+    title = "CO2 Emissions by Mode of Transport",
+    subtitle = "gCO₂ per passenger km (source: BEIS/Defra 2019)",
+    x = NULL,
+    y = NULL
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    plot.subtitle = element_text(margin = margin(b = 10)),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    plot.margin = margin(20, 20, 20, 20)
+  ) +
+  xlim(0, 350)  # Extend x-axis so text fits
+
+
+
+
+# here we look at the data with logos 
+
+library(tidyverse)
+
+# New tibble with emojis
+emissions_data <- tibble(
+  Mode = c(
+    "✈️ Domestic flight",
+    "🛫 Long haul flight",
+    "🚗 Car (1 passenger)",
+    "🚌 Bus",
+    "🚙 Car (4 passengers)",
+    "🚆 Domestic rail",
+    "🚌 Coach",
+    "🚄 High-Speed Rail"
+  ),
+  Emissions_gCO2_per_km = c(
+    133, 102, 171, 104, 43, 41, 27, 6
+  ),
+  Additional_Emissions_gCO2_per_km = c(
+    121, 93, NA, NA, NA, NA, NA, NA
+  )
+)
+
+# Reorder for plotting
+emissions_data <- emissions_data %>%
+  mutate(Mode = fct_reorder(Mode, Emissions_gCO2_per_km))
+
+# Plot
+ggplot(emissions_data, aes(x = Emissions_gCO2_per_km, y = Mode)) +
+  geom_col(fill = "#0072B2") +
+  geom_col(aes(x = Emissions_gCO2_per_km + Additional_Emissions_gCO2_per_km),
+           fill = "#B2D8F7") +
+  geom_text(aes(label = paste0(Emissions_gCO2_per_km, "g")),
+            hjust = -0.1, color = "black", size = 4) +
+  geom_text(aes(x = Emissions_gCO2_per_km + Additional_Emissions_gCO2_per_km, 
+                label = ifelse(!is.na(Additional_Emissions_gCO2_per_km),
+                               paste0("+", Additional_Emissions_gCO2_per_km, "g"), "")),
+            hjust = -0.1, color = "black", size = 4) +
+  labs(
+    title = "CO2 Emissions by Mode of Transport",
+    subtitle = "gCO₂ per passenger km (source: BEIS/Defra 2019)",
+    x = NULL,
+    y = NULL
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    plot.subtitle = element_text(margin = margin(b = 10)),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    plot.margin = margin(20, 20, 20, 20)
+  ) +
+  xlim(0, 350)
+
+
+
+ # another go 
+
+library(tidyverse)
+library(ggtext)
+
+# 1. Original data
+emissions_data <- tibble(
+  Mode = c(
+    "Domestic flight",
+    "Long haul flight",
+    "Car (1 passenger)",
+    "Bus",
+    "Car (4 passengers)",
+    "Domestic rail",
+    "Coach",
+    "High-Speed Rail "
+  ),
+  Icon = c(
+    "✈️", "🛫", "🚗", "🚌", "🚙", "🚆", "🚌", "🚄"
+  ),
+  Emissions_gCO2_per_km = c(
+    133, 102, 171, 104, 43, 41, 27, 6
+  ),
+  Additional_Emissions_gCO2_per_km = c(
+    121, 93, 0, 0, 0, 0, 0, 0
+  )
+)
+
+# 2. Combine labels early and reorder
+emissions_data <- emissions_data %>%
+  mutate(
+    Mode_Label = paste0(Icon, " ", Mode),
+    Mode_Label = fct_reorder(Mode_Label, Emissions_gCO2_per_km)
+  )
+
+# 3. Pivot longer
+emissions_long <- emissions_data %>%
+  pivot_longer(
+    cols = c(Emissions_gCO2_per_km, Additional_Emissions_gCO2_per_km),
+    names_to = "Type",
+    values_to = "Value"
+  ) %>%
+  mutate(Type = recode(Type,
+                       "Emissions_gCO2_per_km" = "Base emissions",
+                       "Additional_Emissions_gCO2_per_km" = "Additional emissions"))
+
+# 4. Plot
+ggplot(emissions_long, aes(x = Value, y = Mode_Label, fill = Type)) +
+  geom_col(position = "stack") +
+  scale_fill_manual(values = c("Base emissions" = "#0072B2", "Additional emissions" = "#B2D8F7")) +
+  geom_text(data = emissions_long %>% filter(Type == "Base emissions"),
+            aes(label = paste0(Value, "g")),
+            hjust = -0.1, size = 4, color = "black") +
+  geom_text(data = emissions_long %>% filter(Type == "Additional emissions" & Value > 0),
+            aes(label = paste0("+", Value, "g")),
+            hjust = -0.1, size = 4, color = "black") +
+  labs(
+    title = "CO₂ Emissions by Mode of Transport",
+    subtitle = "gCO₂ per passenger km (source: BEIS/Defra 2019)",
+    x = NULL,
+    y = NULL,
+    fill = NULL
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    plot.subtitle = element_text(margin = margin(b = 10)),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    axis.text.y = element_markdown(),  # enables emoji labels
+    legend.position = "none",
+    plot.margin = margin(20, 20, 20, 20)
+  ) +
+  xlim(0, 350)
+
+
+# another go 
+
+library(tidyverse)
+
+# Clean tibble WITHOUT emojis
+emissions_data <- tibble(
+  Mode = c(
+    "Domestic flight",
+    "Long haul flight",
+    "Car (1 passenger)",
+    "Bus",
+    "Car (4 passengers)",
+    "Domestic rail",
+    "Coach",
+    "High-Speed Rail"
+  ),
+  Emissions_gCO2_per_km = c(
+    133, 102, 171, 104, 43, 41, 27, 6
+  ),
+  Additional_Emissions_gCO2_per_km = c(
+    121, 93, 0, 0, 0, 0, 0, 0
+  )
+)
+
+# Reorder properly
+emissions_data <- emissions_data %>%
+  mutate(Mode = fct_reorder(Mode, Emissions_gCO2_per_km))
+
+# Pivot longer
+emissions_long <- emissions_data %>%
+  pivot_longer(
+    cols = c(Emissions_gCO2_per_km, Additional_Emissions_gCO2_per_km),
+    names_to = "Type",
+    values_to = "Value"
+  ) %>%
+  mutate(Type = recode(Type,
+                       "Emissions_gCO2_per_km" = "Base emissions",
+                       "Additional_Emissions_gCO2_per_km" = "Additional emissions"))
+
+# Plot
+ggplot(emissions_long, aes(x = Value, y = Mode, fill = Type)) +
+  geom_col(position = "stack") +
+  scale_fill_manual(values = c("Base emissions" = "#0072B2", "Additional emissions" = "#B2D8F7")) +
+  
+  # Add labels for base emissions
+  geom_text(data = emissions_long %>% filter(Type == "Base emissions"),
+            aes(label = paste0(Value, "g")),
+            position = position_stack(vjust = 0.5),  # CENTER the text inside the dark blue bars
+            color = "white", size = 4) +
+  
+  # Add labels for additional emissions
+  geom_text(data = emissions_long %>% filter(Type == "Additional emissions" & Value > 0),
+            aes(label = paste0("+", Value, "g")),
+            hjust = -0.1,
+            color = "black", size = 4,
+            position = position_stack(vjust = 1)) +  # put the extra number just outside
+  labs(
+    title = "CO₂ Emissions by Mode of Transport",
+    subtitle = "gCO₂ per passenger km (source: BEIS/Defra 2019)",
+    x = NULL,
+    y = NULL,
+    fill = NULL
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    plot.subtitle = element_text(margin = margin(b = 10)),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(20, 20, 20, 20)
+  ) +
+  xlim(0, 350)  # enough space for the labels outside
+
+
+
+# and another go
+
+library(tidyverse)
+
+# 1. Create the data
+emissions_data <- tibble(
+  Mode = c(
+    "Domestic flight",
+    "Long haul flight",
+    "Car (1 passenger)",
+    "Bus",
+    "Car (4 passengers)",
+    "Domestic rail",
+    "Coach",
+    "High-Speed Rail"
+  ),
+  Emissions_gCO2_per_km = c(133, 102, 171, 104, 43, 41, 27, 6),
+  Additional_Emissions_gCO2_per_km = c(121, 93, 0, 0, 0, 0, 0, 0)
+)
+
+# 2. Reorder manually and reverse for correct ggplot stacking
+emissions_data <- emissions_data %>%
+  mutate(
+    Mode = factor(Mode, levels = rev(c(
+      "Domestic flight",
+      "Long haul flight",
+      "Car (1 passenger)",
+      "Bus",
+      "Car (4 passengers)",
+      "Domestic rail",
+      "Coach",
+      "High-Speed Rail"
+    )))
+  )
+
+# 3. Pivot longer
+emissions_long <- emissions_data %>%
+  pivot_longer(
+    cols = c(Emissions_gCO2_per_km, Additional_Emissions_gCO2_per_km),
+    names_to = "Type",
+    values_to = "Value"
+  ) %>%
+  mutate(Type = recode(Type,
+    "Emissions_gCO2_per_km" = "Base emissions",
+    "Additional_Emissions_gCO2_per_km" = "Additional emissions"
+  ))
+
+# 4. Plot
+ggplot(emissions_long, aes(x = Value, y = Mode, fill = Type)) +
+  geom_col(position = "stack") +
+  
+  scale_fill_manual(
+    values = c(
+      "Base emissions" = "#0072B2",
+      "Additional emissions" = "#B2D8F7"
+    ),
+    labels = c(
+      "Base emissions" = "CO2 emissions",
+      "Additional emissions" = "Secondary effects from high altitude, non-CO2 emissions"
+    ),
+    name = NULL
+  ) +
+
+  # Only center dark blue bar labels, excluding High-Speed Rail
+  geom_text(data = emissions_long %>% 
+              filter(Type == "Base emissions" & Mode != "High-Speed Rail"),
+            aes(label = paste0(Value, "g")),
+            position = position_stack(vjust = 0.5),
+            color = "white", size = 4) +
+
+  # Place light blue bar labels (+121g, +93g) slightly above
+  geom_text(data = emissions_long %>% 
+              filter(Type == "Additional emissions" & Value > 0),
+            aes(label = paste0("+", Value, "g")),
+            position = position_stack(vjust = 1.5),   # <-- your original vjust = 1.5
+            color = "black", size = 4) +
+
+  # Move High-Speed Rail (tiny bar) label outside
+  geom_text(data = emissions_long %>% 
+              filter(Mode == "High-Speed Rail" & Type == "Base emissions"),
+            aes(x = Value + 10, label = paste0(Value, "g")),
+            color = "black", size = 4, hjust = 0) +
+
+  labs(
+    title = "Emissions by Mode of Transport",
+    subtitle = "gCO2 per passenger km (source: BEIS/Defra 2019)",
+    x = NULL,
+    y = NULL,
+    fill = NULL
+  ) +
+  
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    plot.subtitle = element_text(size = 10, margin = margin(b = 10)),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 12),
+    axis.ticks.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom",              # << BBC style legend at bottom
+    legend.direction = "horizontal",          # << horizontal layout
+    legend.text = element_text(size = 12),
+    legend.key.size = unit(1, "lines"),
+    plot.margin = margin(20, 20, 20, 20)
+  ) +
+  
+  xlim(0, 350)
+
+
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
